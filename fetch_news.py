@@ -151,13 +151,17 @@ def _entry_to_story(
     entry: feedparser.FeedParserDict, source_name: str, source_type: SourceType
 ) -> Story | None:
     """Convert one feedparser entry into a Story, or None if it's unusable."""
-    title = unescape(entry.get("title", "").strip())
-    url = entry.get("link", "").strip()
+    raw_title = entry.get("title", "")
+    title = unescape(raw_title.strip()) if isinstance(raw_title, str) else ""
+
+    raw_url = entry.get("link", "")
+    url = raw_url.strip() if isinstance(raw_url, str) else ""
+
     if not title or not url:
         return None
 
-    description = entry.get("summary", "") or entry.get("description", "")
-    description = _clean_description(description)
+    raw_desc = entry.get("summary", "") or entry.get("description", "")
+    description = _clean_description(raw_desc if isinstance(raw_desc, str) else "")
 
     published = _extract_published(entry)
     if published is None:
@@ -175,16 +179,16 @@ def _entry_to_story(
     )
 
 
-def _extract_published(entry: feedparser.FeedParserDict) -> datetime | None:
+def _extract_published(entry: feedparser.FeedParserDict) -> datetime | None: #FeedParserDict - dictionary like object(type)
     """Pull a timezone-aware UTC datetime out of a feed entry, trying multiple fields."""
     for key in ("published_parsed", "updated_parsed"):
         struct_time = entry.get(key)
-        if struct_time:
-            return datetime(*struct_time[:6], tzinfo=timezone.utc)
+        if struct_time and isinstance(struct_time, tuple) and len(struct_time) >= 6:
+            return datetime(*struct_time[:6], tzinfo=timezone.utc)  # type: ignore
 
     for key in ("published", "updated"):
         raw = entry.get(key)
-        if raw:
+        if isinstance(raw, str) and raw:
             try:
                 parsed_dt = dateutil_parser.parse(raw)
                 if parsed_dt.tzinfo is None:

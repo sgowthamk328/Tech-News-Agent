@@ -12,3 +12,7 @@ wheels/
 .DS_Store
 *.md
 !README.md
+# Local caches & generated
+.cache/
+output/
+scratch.py

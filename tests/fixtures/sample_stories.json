@@ -1,0 +1,82 @@
+[
+    {
+        "title": "OpenAI releases new model architecture with sparse attention",
+        "url": "https://techcrunch.com/fixtures/sparse-attention-release",
+        "description": "OpenAI unveiled a new model architecture using sparse attention layers, claiming faster inference at similar quality to dense models.",
+        "published": "2026-08-30T08:00:00+00:00",
+        "source": "TechCrunch",
+        "source_type": "editorial"
+    },
+    {
+        "title": "Apache Iggy, a message streaming platform in Rust, graduates to an Apache TLP",
+        "url": "https://www.theregister.com/fixtures/apache-iggy-tlp",
+        "description": "Apache Iggy, a message streaming platform written in Rust, has graduated from incubation to a full Apache Top-Level Project.",
+        "published": "2026-08-30T09:00:00+00:00",
+        "source": "The Register",
+        "source_type": "editorial"
+    },
+    {
+        "title": "Nvidia's $3.5B MediaTek bet reveals its plan for tackling Big Tech's AI chip buildout",
+        "url": "https://techcrunch.com/fixtures/nvidia-mediatek-bet",
+        "description": "Nvidia invests $3.5 billion into Taiwanese chipmaker MediaTek, aiming to stay essential to AI infrastructure as Big Tech builds its own chips.",
+        "published": "2026-08-30T10:00:00+00:00",
+        "source": "TechCrunch",
+        "source_type": "editorial"
+    },
+    {
+        "title": "Vijay Pande spins out a smaller AI-native biotech fund after leaving a16z",
+        "url": "https://techcrunch.com/fixtures/pande-vzvc-fund",
+        "description": "Vijay Pande, who ran a16z's roughly $4 billion biotech practice, has left to start a much smaller, AI-native venture fund called VZVC.",
+        "published": "2026-08-30T11:00:00+00:00",
+        "source": "TechCrunch",
+        "source_type": "editorial"
+    },
+    {
+        "title": "New study shows large language models exhibit emergent reasoning at scale",
+        "url": "https://arstechnica.com/fixtures/emergent-reasoning-study",
+        "description": "Researchers published a study arguing that certain reasoning capabilities in large language models only emerge past a specific parameter-count threshold.",
+        "published": "2026-08-30T12:00:00+00:00",
+        "source": "Ars Technica",
+        "source_type": "editorial"
+    },
+    {
+        "title": "Coordination Headwind: How Organizations Are Like Slime Molds",
+        "url": "https://komoroske.com/fixtures/slime-mold",
+        "description": "",
+        "published": "2026-08-30T13:00:00+00:00",
+        "source": "Hacker News",
+        "source_type": "discovery"
+    },
+    {
+        "title": "ChatGPT and Reddit now face EU's toughest online safety rules",
+        "url": "https://arstechnica.com/fixtures/eu-toughest-safety-rules",
+        "description": "Explosive growth comes with a new regulatory burden as the EU applies its strictest online safety rules to ChatGPT and Reddit.",
+        "published": "2026-08-30T14:00:00+00:00",
+        "source": "Ars Technica",
+        "source_type": "editorial"
+    },
+    {
+        "title": "Turns out Brits would quite like their private messages to stay private",
+        "url": "https://www.theregister.com/fixtures/brits-private-messages",
+        "description": "Polling finds two-thirds of respondents don't trust the current or any future government with access to their encrypted messages.",
+        "published": "2026-08-30T15:00:00+00:00",
+        "source": "The Register",
+        "source_type": "editorial"
+    },
+    {
+        "title": "Sony Music, Warner sue Anthropic, alleging a brazen campaign of intellectual property theft",
+        "url": "https://techcrunch.com/fixtures/sony-warner-anthropic-suit",
+        "description": "Sony Music and Warner filed a broad lawsuit against Anthropic, accusing it of illegally using copyrighted song lyrics to train its models.",
+        "published": "2026-08-30T16:00:00+00:00",
+        "source": "TechCrunch",
+        "source_type": "editorial"
+    },
+    {
+        "title": "Show HN: A scalable robotics data pipeline for training manipulation models",
+        "url": "https://github.com/fixtures/hebbian-robotics-hflow",
+        "description": "",
+        "published": "2026-08-30T17:00:00+00:00",
+        "source": "Hacker News",
+        "source_type": "discovery"
+    }
+]
