@@ -25,8 +25,7 @@ explanation to match:
 
 - technical_release: explain the underlying mechanism/architecture and what \
 problem it actually solves.
-- funding_ma: explain the business logic, who's involved, and what it \
-signals about the market.
+- funding_ma: explain the business logic, who's involved, and what it signals about the market.
 - research: explain the finding, why it's novel, and what it enables next.
 - policy_security: explain what changed, who is affected, and what happens \
 next.

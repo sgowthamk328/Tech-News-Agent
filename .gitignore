@@ -10,9 +10,16 @@ wheels/
 .venv
 *.env
 .DS_Store
-*.md
-!README.md
-# Local caches & generated
-.cache/
-output/
+# Scratch
 scratch.py
+
+# Local generation cache (large binary files, machine-specific)
+.cache/
+
+# Root-level markdown planning docs — NOT the daily reports in output/
+/*.md
+!README.md
+
+# Track the output directory and the reports inside it
+!output/
+!output/**
