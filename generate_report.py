@@ -32,6 +32,7 @@ from __future__ import annotations
 import argparse
 import json
 import logging
+import time
 from datetime import date, datetime, timezone
 from pathlib import Path
 
@@ -129,7 +130,10 @@ def generate_all(stories: list[Story], cache: StoryCache) -> list[ExplainedStory
             )
 
     new_results: dict[str, ExplainedStory] = {}
-    for batch in _chunk(retrieved_stories, BATCH_SIZE):
+    batches = _chunk(retrieved_stories, BATCH_SIZE)
+    for i, batch in enumerate(batches):
+        if i > 0:
+            time.sleep(2)  # Short pause between batches to prevent triggering rapid burst rate limits
         batch_results = generate_batch(batch)
         for url, result in batch_results.items():
             cache.set(result.story, MODEL_NAME, result)

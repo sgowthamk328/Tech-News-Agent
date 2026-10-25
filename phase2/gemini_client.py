@@ -19,13 +19,19 @@ import re
 import time
 
 from google import genai
+from google.genai import errors
 
 from phase2.models import ExplainedStory, RetrievedStory
 from phase2.prompts import VALID_CATEGORIES, build_batch_prompt
 
-MODEL_NAME = "gemini-3.6-flash"
-MAX_RETRIES = 2
-RETRY_BACKOFF_SECONDS = 3
+PRIMARY_MODEL = os.environ.get("GEMINI_MODEL", "gemini-3.8-flash")
+FALLBACK_MODELS = [PRIMARY_MODEL, "gemini-2.5-flash"]
+# Remove duplicates while preserving priority order
+MODELS_TO_TRY = list(dict.fromkeys(FALLBACK_MODELS))
+
+MODEL_NAME = PRIMARY_MODEL
+MAX_RETRIES = 3
+RETRY_BACKOFF_SECONDS = 5
 
 logger = logging.getLogger(__name__)
 
@@ -46,10 +52,10 @@ def _get_client() -> genai.Client:
     return genai.Client(api_key=api_key)
 
 
-def _call_model(client: genai.Client, prompt: str) -> str:
+def _call_model(client: genai.Client, prompt: str, model_name: str = MODEL_NAME) -> str:
     """Make one API call and return the raw response text."""
     response = client.models.generate_content(
-        model=MODEL_NAME,
+        model=model_name,
         contents=prompt,
         config={"automatic_function_calling": {"disable": True}},
     )
@@ -124,21 +130,34 @@ def generate_batch(retrieved_stories: list[RetrievedStory]) -> dict[str, Explain
     prompt = build_batch_prompt(retrieved_stories)
 
     last_error: Exception | None = None
-    for attempt in range(1, MAX_RETRIES + 1):
-        try:
-            raw_text = _call_model(client, prompt)
-            entries = _extract_json_array(raw_text)
-            return _match_entries_to_stories(retrieved_stories, entries)
-        except (GenerationError, json.JSONDecodeError) as exc:
-            last_error = exc
-            logger.warning(
-                "Batch generation attempt %d/%d failed: %s", attempt, MAX_RETRIES, exc
-            )
-            if attempt < MAX_RETRIES:
-                time.sleep(RETRY_BACKOFF_SECONDS * attempt)
+    for model_name in MODELS_TO_TRY:
+        for attempt in range(1, MAX_RETRIES + 1):
+            try:
+                raw_text = _call_model(client, prompt, model_name=model_name)
+                entries = _extract_json_array(raw_text)
+                results = _match_entries_to_stories(retrieved_stories, entries)
+                if results:
+                    return results
+                logger.warning(
+                    "Model %s returned no valid story entries on attempt %d/%d",
+                    model_name, attempt, MAX_RETRIES,
+                )
+            except (GenerationError, json.JSONDecodeError, errors.APIError) as exc:
+                last_error = exc
+                logger.warning(
+                    "Batch generation with model %s attempt %d/%d failed: %s",
+                    model_name, attempt, MAX_RETRIES, exc,
+                )
+                if attempt < MAX_RETRIES:
+                    time.sleep(RETRY_BACKOFF_SECONDS * attempt)
+
+        logger.warning(
+            "Exhausted %d retries for model %s. Trying fallback model if available.",
+            MAX_RETRIES, model_name,
+        )
 
     logger.error(
-        "Batch of %d stories failed after %d attempts (%s); skipping this batch",
-        len(retrieved_stories), MAX_RETRIES, last_error,
+        "Batch of %d stories failed across all models and attempts (%s); skipping this batch",
+        len(retrieved_stories), last_error,
     )
     return {}
