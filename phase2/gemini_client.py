@@ -25,7 +25,7 @@ from phase2.models import ExplainedStory, RetrievedStory
 from phase2.prompts import VALID_CATEGORIES, build_batch_prompt
 
 PRIMARY_MODEL = os.environ.get("GEMINI_MODEL", "gemini-3.8-flash")
-FALLBACK_MODELS = [PRIMARY_MODEL, "gemini-2.5-flash"]
+FALLBACK_MODELS = [PRIMARY_MODEL, "gemini-3.6-flash"]
 # Remove duplicates while preserving priority order
 MODELS_TO_TRY = list(dict.fromkeys(FALLBACK_MODELS))
 
