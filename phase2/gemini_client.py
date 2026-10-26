@@ -18,8 +18,9 @@ import os
 import re
 import time
 
+import httpx
 from google import genai
-from google.genai import errors
+from google.genai import errors, types
 
 from phase2.models import ExplainedStory, RetrievedStory
 from phase2.prompts import VALID_CATEGORIES, build_batch_prompt
@@ -32,6 +33,7 @@ MODELS_TO_TRY = list(dict.fromkeys(FALLBACK_MODELS))
 MODEL_NAME = PRIMARY_MODEL
 MAX_RETRIES = 3
 RETRY_BACKOFF_SECONDS = 5
+REQUEST_TIMEOUT_MS = 120_000  # 120s timeout to allow reasoning completion without dropping socket
 
 logger = logging.getLogger(__name__)
 
@@ -49,16 +51,35 @@ def _get_client() -> genai.Client:
             "GEMINI_API_KEY is not set. Add it to your .env file (local) "
             "or as a repo/host secret (Actions / Render)."
         )
-    return genai.Client(api_key=api_key)
+    return genai.Client(
+        api_key=api_key,
+        http_options=types.HttpOptions(timeout=REQUEST_TIMEOUT_MS),
+    )
 
 
 def _call_model(client: genai.Client, prompt: str, model_name: str = MODEL_NAME) -> str:
     """Make one API call and return the raw response text."""
-    response = client.models.generate_content(
-        model=model_name,
-        contents=prompt,
-        config={"automatic_function_calling": {"disable": True}},
-    )
+    # Use thinking_level="low" on reasoning models to speed up response generation
+    # and prevent connection timeouts on large article prompts.
+    config = {
+        "automatic_function_calling": {"disable": True},
+        "thinking_config": {"thinking_level": "low"},
+    }
+    try:
+        response = client.models.generate_content(
+            model=model_name,
+            contents=prompt,
+            config=config,
+        )
+    except errors.ClientError as exc:
+        if "thinking" in str(exc).lower():
+            response = client.models.generate_content(
+                model=model_name,
+                contents=prompt,
+                config={"automatic_function_calling": {"disable": True}},
+            )
+        else:
+            raise
     return response.text or ""
 
 
@@ -142,11 +163,19 @@ def generate_batch(retrieved_stories: list[RetrievedStory]) -> dict[str, Explain
                     "Model %s returned no valid story entries on attempt %d/%d",
                     model_name, attempt, MAX_RETRIES,
                 )
-            except (GenerationError, json.JSONDecodeError, errors.APIError) as exc:
+            except (GenerationError, json.JSONDecodeError, errors.APIError, httpx.HTTPError) as exc:
                 last_error = exc
                 logger.warning(
-                    "Batch generation with model %s attempt %d/%d failed: %s",
-                    model_name, attempt, MAX_RETRIES, exc,
+                    "Batch generation with model %s attempt %d/%d failed (%s: %s)",
+                    model_name, attempt, MAX_RETRIES, type(exc).__name__, exc,
+                )
+                if attempt < MAX_RETRIES:
+                    time.sleep(RETRY_BACKOFF_SECONDS * attempt)
+            except Exception as exc:
+                last_error = exc
+                logger.warning(
+                    "Unexpected error during batch generation with model %s attempt %d/%d (%s: %s)",
+                    model_name, attempt, MAX_RETRIES, type(exc).__name__, exc,
                 )
                 if attempt < MAX_RETRIES:
                     time.sleep(RETRY_BACKOFF_SECONDS * attempt)
